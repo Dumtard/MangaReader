@@ -10,8 +10,8 @@ namespace MangaReader
     {
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
-      // Application.
       Application.Run(new MangaReaderForm());
+      // Application.Run(new Form1());
     }
   }
 }

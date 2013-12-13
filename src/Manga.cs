@@ -24,18 +24,26 @@ namespace MangaReader
       Loaded = false;
       NumberOfPages = 0;
 
-      Name = "one-piece";
+      Name = "";
       Chapter = 1;
     }
 
-    public void LoadManga()
+    public delegate void Reportback(bool loaded);
+
+    public void LoadManga(Reportback callback, string mangaName)
     {
+    Name = mangaName;
+
+    Console.WriteLine("Loading " + Name + " Chapter " + Chapter);
+
+
       while(!Loaded)
       {
         Loaded = !ReadWebPage("http://www.mangareader.net/" +
                               Name + "/" + Chapter +
                               "/" + (Images.Count+1));          
       }
+      callback(true);
     }
 
     private bool ReadWebPage(string url)
@@ -47,7 +55,6 @@ namespace MangaReader
       }
       catch (WebException)
       {
-        Console.WriteLine("Web Exception");
         return false;
       }
 
