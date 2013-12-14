@@ -28,8 +28,11 @@ namespace MangaReader
 
     private PictureBox PictureBox1;
     private ListBox ListBox1;
+    private ListBox ChaptersList;
 
     private int CurrentPage = 0;
+    private string CurrentMangaURL = "";
+    private int CurrentChapter = 1;
     private CurrentForm CurrentScreen;
 
     Thread LoadingThread;
@@ -41,6 +44,7 @@ namespace MangaReader
 
       PictureBox1 = new PictureBox();
       ListBox1 = new ListBox();
+      ChaptersList = new ListBox();
 
       InitializeComponent();
       InitializeMangaList();
@@ -91,7 +95,7 @@ namespace MangaReader
       {
         if (e.KeyCode == Keys.Enter)
         {
-          InitializeManga((string)ListBox1.SelectedItem);
+          InitializeChapters((string)ListBox1.SelectedItem);
         }
         else if (e.KeyCode == Keys.Escape)
         {
@@ -100,7 +104,15 @@ namespace MangaReader
       }
       else if (CurrentScreen == CurrentForm.ChaptersManga)
       {
-
+        if (e.KeyCode == Keys.Enter)
+        {
+          CurrentChapter = ChaptersList.Items.Count - ChaptersList.SelectedIndex;
+          InitializeManga();
+        }
+        else if (e.KeyCode == Keys.Escape)
+        {
+          InitializeMangaList();
+        }
       }
       else if (CurrentScreen == CurrentForm.ReadManga)
       { 
@@ -108,7 +120,7 @@ namespace MangaReader
         {
           LoadingThread.Abort();
           LoadingThread.Join();
-          InitializeMangaList();
+          InitializeChapters();
         }
         if (e.KeyCode == Keys.Right)
         {
@@ -134,8 +146,12 @@ namespace MangaReader
     {
       if (CurrentScreen == CurrentForm.ListManga)
       {
-        // Console.WriteLine((string)ListBox1.SelectedItem);
-        InitializeManga((string)ListBox1.SelectedItem);
+        InitializeManga();
+      }
+      else if (CurrentScreen == CurrentForm.ChaptersManga)
+      {
+        CurrentChapter = ChaptersList.Items.Count - ChaptersList.SelectedIndex;
+        InitializeManga();
       }
     }
 
@@ -145,6 +161,7 @@ namespace MangaReader
       CurrentScreen = CurrentForm.ListManga;
 
       this.Controls.RemoveByKey("PictureBox1");
+      this.Controls.RemoveByKey("ChaptersList");
 
       // 
       // ListBox1
@@ -170,27 +187,79 @@ namespace MangaReader
       this.ResumeLayout();
     }
 
-    private void InitializeManga(string manga)
+    private void InitializeChapters(string url)
     {
-      manga = manga.ToLower();
-      manga = manga.Replace(" ", "-");
-      manga = manga.Replace("/", "");
-      manga = manga.Replace(",", "");
-      manga = manga.Replace(".", "");
-      manga = manga.Replace("+", "");
-      manga = manga.Replace("!", "");
-      manga = manga.Replace("'", "");
-      manga = manga.Replace(";", "");
-      manga = manga.Replace(":", "");
-      manga = manga.Replace("(", "");
-      manga = manga.Replace(")", "");
-      manga = manga.Replace("@", "");
-      manga = manga.Replace("#", "");
-      manga = manga.Replace("%", "");
-      manga = manga.Replace("&", "");
-      manga = manga.Replace("*", "");
-      manga = manga.Replace("?", "");
+      CurrentMangaURL = url.ToLower();
+      CurrentMangaURL = CurrentMangaURL.Replace(" ", "-");
+      CurrentMangaURL = CurrentMangaURL.Replace("/", "");
+      CurrentMangaURL = CurrentMangaURL.Replace(",", "");
+      CurrentMangaURL = CurrentMangaURL.Replace(".", "");
+      CurrentMangaURL = CurrentMangaURL.Replace("+", "");
+      CurrentMangaURL = CurrentMangaURL.Replace("!", "");
+      CurrentMangaURL = CurrentMangaURL.Replace("'", "");
+      CurrentMangaURL = CurrentMangaURL.Replace(";", "");
+      CurrentMangaURL = CurrentMangaURL.Replace(":", "");
+      CurrentMangaURL = CurrentMangaURL.Replace("(", "");
+      CurrentMangaURL = CurrentMangaURL.Replace(")", "");
+      CurrentMangaURL = CurrentMangaURL.Replace("@", "");
+      CurrentMangaURL = CurrentMangaURL.Replace("#", "");
+      CurrentMangaURL = CurrentMangaURL.Replace("%", "");
+      CurrentMangaURL = CurrentMangaURL.Replace("&", "");
+      CurrentMangaURL = CurrentMangaURL.Replace("*", "");
+      CurrentMangaURL = CurrentMangaURL.Replace("?", "");
+      CurrentMangaURL = "http://www.mangareader.net/" + CurrentMangaURL;
 
+      this.SuspendLayout();
+      CurrentScreen = CurrentForm.ChaptersManga;
+
+      this.Controls.RemoveByKey("ListBox1");
+      this.Controls.RemoveByKey("PictureBox1");
+
+      // 
+      // ChaptersList
+      // 
+      this.ChaptersList.FormattingEnabled = true;
+      this.ChaptersList.Location = new System.Drawing.Point(0, 0);
+      this.ChaptersList.Name = "ChaptersList";
+      this.ChaptersList.Size = this.ClientSize;
+      this.ChaptersList.TabIndex = 0;
+      this.ChaptersList.DoubleClick += new EventHandler(this.DoubleClicked);
+      this.ChaptersList.KeyDown += new KeyEventHandler(this.KeyPressed);
+
+      // Read in number of chapters
+      int NumberOfChapters = 0;
+
+      WebClient Client = new WebClient();
+
+      string htmlCode = Client.DownloadString(CurrentMangaURL);
+
+      string[] halves = htmlCode.Split(new string[] { "LATEST CHAPTERS" },
+                                       StringSplitOptions.None);
+      halves = halves[1].Split(new string[] { "</a>" },
+                            StringSplitOptions.None);
+
+      int start = halves[0].LastIndexOf(" ", StringComparison.Ordinal);
+
+      NumberOfChapters = int.Parse(halves[0].Substring(
+                         start+1, halves[0].Length - (start+1)));
+
+      ChaptersList.Items.Clear();
+
+      ChaptersList.BeginUpdate();
+      for (int i = NumberOfChapters; i > 0; i--)
+      {
+        ChaptersList.Items.Add("Chapter " + i);
+      }
+      ChaptersList.EndUpdate();
+
+      this.Controls.Add(ChaptersList);
+
+      this.ResumeLayout();
+
+    }
+
+    private void InitializeManga()
+    {
       CurrentManga = new Manga();
       CurrentPage = 0;
 
@@ -198,11 +267,14 @@ namespace MangaReader
       CurrentScreen = CurrentForm.ReadManga;
 
       this.Controls.RemoveByKey("ListBox1");
+      this.Controls.RemoveByKey("ChaptersList");
       //
       // Picture Box
       //
       LoadingThread = new Thread(() =>
-                          CurrentManga.LoadManga(MangaLoaded, manga));
+                          CurrentManga.LoadManga(MangaLoaded,
+                                                 CurrentMangaURL,
+                                                 CurrentChapter));
       LoadingThread.Start();
 
       while(CurrentManga.Images.Count < 1);

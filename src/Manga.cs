@@ -25,22 +25,21 @@ namespace MangaReader
       NumberOfPages = 0;
 
       Name = "";
-      Chapter = 1;
+      Chapter = 0;
     }
 
     public delegate void Reportback(bool loaded);
 
-    public void LoadManga(Reportback callback, string mangaName)
+    public void LoadManga(Reportback callback, string mangaName, int chapter)
     {
     Name = mangaName;
+    Chapter = chapter;
 
     Console.WriteLine("Loading " + Name + " Chapter " + Chapter);
 
-
-      while(!Loaded)
+    while(!Loaded)
       {
-        Loaded = !ReadWebPage("http://www.mangareader.net/" +
-                              Name + "/" + Chapter +
+        Loaded = !ReadWebPage(Name + "/" + Chapter +
                               "/" + (Images.Count+1));          
       }
       callback(true);

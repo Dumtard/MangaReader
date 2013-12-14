@@ -1,5 +1,5 @@
 all:
-	mcs src/Main.cs src/MangaReaderForm.cs src/Manga.cs src/Form1.cs \
+	mcs src/Main.cs src/MangaReaderForm.cs src/Manga.cs \
 	src/MangaList.cs \
 	-target:winexe -out:MangaReader.exe \
 	-r:System.Windows.Forms.dll \
