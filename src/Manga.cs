@@ -30,6 +30,14 @@ namespace MangaReader
 
     public delegate void Reportback(bool loaded);
 
+    public void Clear()
+    {
+      Loaded = false;
+      NumberOfPages = 0;
+      Name = "";
+      Chapter = 0;
+    }
+
     public void LoadManga(Reportback callback, string mangaName, int chapter)
     {
     Name = mangaName;
@@ -60,9 +68,15 @@ namespace MangaReader
       int start = htmlCode.IndexOf("id=\"img\"", StringComparison.Ordinal);
       int end = htmlCode.IndexOf("alt=", StringComparison.Ordinal);
 
+      // Console.WriteLine(start + " " + end);
+      // Console.WriteLine(htmlCode);
+
       string temp = htmlCode.Substring(start, end-start);
       start = temp.IndexOf("src=", StringComparison.Ordinal) + 5;
       temp = temp.Substring(start, temp.Length-start-2);
+
+      // Console.WriteLine(start + " " + end);
+      // Console.WriteLine(temp);
 
       var request = WebRequest.Create(temp);
 

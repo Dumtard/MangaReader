@@ -48,6 +48,11 @@ namespace MangaReader
 
       InitializeComponent();
       InitializeMangaList();
+
+      this.ListBox1.DoubleClick += new EventHandler(this.DoubleClicked);
+      this.ListBox1.KeyDown += new KeyEventHandler(this.KeyPressed);
+      this.ChaptersList.DoubleClick += new EventHandler(this.DoubleClicked);
+      this.ChaptersList.KeyDown += new KeyEventHandler(this.KeyPressed);
     }
 
     protected override void Dispose(bool disposing)
@@ -95,6 +100,10 @@ namespace MangaReader
       {
         if (e.KeyCode == Keys.Enter)
         {
+          if (ListBox1.SelectedItem == null)
+          {
+            return;
+          }
           InitializeChapters((string)ListBox1.SelectedItem);
         }
         else if (e.KeyCode == Keys.Escape)
@@ -106,6 +115,10 @@ namespace MangaReader
       {
         if (e.KeyCode == Keys.Enter)
         {
+          if (ChaptersList.SelectedIndex < 0)
+          {
+            ChaptersList.SelectedIndex = 0;
+          }
           CurrentChapter = ChaptersList.Items.Count - ChaptersList.SelectedIndex;
           InitializeManga();
         }
@@ -120,7 +133,7 @@ namespace MangaReader
         {
           LoadingThread.Abort();
           LoadingThread.Join();
-          InitializeChapters();
+          InitializeChapters((string)ListBox1.SelectedItem);
         }
         if (e.KeyCode == Keys.Right)
         {
@@ -146,7 +159,7 @@ namespace MangaReader
     {
       if (CurrentScreen == CurrentForm.ListManga)
       {
-        InitializeManga();
+        InitializeChapters((string)ListBox1.SelectedItem);
       }
       else if (CurrentScreen == CurrentForm.ChaptersManga)
       {
@@ -159,6 +172,7 @@ namespace MangaReader
     {
       this.SuspendLayout();
       CurrentScreen = CurrentForm.ListManga;
+      CurrentManga.Clear();
 
       this.Controls.RemoveByKey("PictureBox1");
       this.Controls.RemoveByKey("ChaptersList");
@@ -171,8 +185,6 @@ namespace MangaReader
       this.ListBox1.Name = "ListBox1";
       this.ListBox1.Size = this.ClientSize;
       this.ListBox1.TabIndex = 0;
-      this.ListBox1.DoubleClick += new EventHandler(this.DoubleClicked);
-      this.ListBox1.KeyDown += new KeyEventHandler(this.KeyPressed);
 
       if (ListBox1.Items.Count < 1) {
         ListBox1.BeginUpdate();
@@ -223,8 +235,6 @@ namespace MangaReader
       this.ChaptersList.Name = "ChaptersList";
       this.ChaptersList.Size = this.ClientSize;
       this.ChaptersList.TabIndex = 0;
-      this.ChaptersList.DoubleClick += new EventHandler(this.DoubleClicked);
-      this.ChaptersList.KeyDown += new KeyEventHandler(this.KeyPressed);
 
       // Read in number of chapters
       int NumberOfChapters = 0;
